@@ -1,1 +1,55 @@
-create a text 1 .txt file
+
+#include <SPI.h>
+#include <Ethernet.h>
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED }; 
+IPAddress ip(192, 168, 1, 177); 
+
+EthernetClient client;
+
+IPAddress server(192, 168, 1, 100); 
+int port = 80; 
+
+void setup() {
+  
+  Serial.begin(9600);
+  while (!Serial) { ; }
+
+  
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Ethernet Shield failed to initialize");
+    while (true) {
+      delay(1);
+    }
+  }
+
+  delay(1000);
+  
+  Serial.print("Arduino IPv4 Address: ");
+  Serial.println(Ethernet.localIP());
+  
+  if (client.connect(server, port)) {
+    Serial.println("Connected to the server");
+    client.println("GET / HTTP/1.1");
+    client.println("Host: 192.168.1.100");
+    client.println("Connection: close");
+    client.println();
+  } else {
+    Serial.println("Connection failed");
+  }
+}
+
+void loop() {
+  
+  if (client.available()) {
+    char c = client.read();
+    Serial.print(c); 
+  }
+
+  if (!client.connected()) {
+    Serial.println();
+    Serial.println("Server disconnected");
+    client.stop();
+    while (true) { delay(1); } 
+  }
+}
